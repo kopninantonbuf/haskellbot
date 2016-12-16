@@ -1,0 +1,8 @@
+resolver: lts-7.2
+packages:
+- '.'
+extra-deps:
+- telegram-api-0.5.0.1
+- aeson-1.0.1.0
+flags: {}
+extra-package-dbs: []
