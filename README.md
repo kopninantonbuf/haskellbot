@@ -8,4 +8,4 @@ Implementation of the Telegram bot which tells about Haskell-function.
 3. stack ghci
 4. :main
 5. 
-![vzhuh](ipic.su/img/img7/fs/vzhuh.1482187468.jpg)
+![vzhuh](https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg)
