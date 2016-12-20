@@ -7,4 +7,4 @@ Implementation of the Telegram bot which return description of Haskell-function
 2. stack build
 3. stack ghci
 4. :main
-![vzhuh](https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg)
+5. ![vzhuh](https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg)
