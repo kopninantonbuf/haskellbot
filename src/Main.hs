@@ -90,9 +90,6 @@ processUpdate token manager update = void $ runMaybeT $ do
     -- если команда не распознана, то посылаем это сообщение:
     when (not processed) $ do sendReply msg "Этого я не умею. Если запутался, воспользуйся командой help"
       where
-        -- функция ответа на несуществующую функцию
-
-
         -- функция для отправки ответа в чат телеграма
         sendReply msg reply = do
           let

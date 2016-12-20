@@ -51,7 +51,9 @@ makeRequest queryText count = do
   parseRequest $ unpack $ "http://www.haskell.org/hoogle/" <> renderSimpleQuery True qs
 
 -- Функция, проходящая по списку ответов с Hoogle.org и обрабатывающая описание каждой функции с помощью функции formatHoogleResult.
+hoogleResults :: [HoogleResult] -> Text
 hoogleResults = L.foldl1' (\x y -> x <> "  \n" <> y) . map (("=====================================\n" <>) . hoogleResult)
 
 -- Функция, обрабатывающая описание каждой функции.
+hoogleResult :: HoogleResult -> Text
 hoogleResult res = "-- " <> self res <> "  \n\nDescription: \n" <> docs res <> " \n" <> location res <> "\n"
