@@ -34,7 +34,7 @@ import Network.HTTP.Client.TLS (tlsManagerSettings)
 import Web.Telegram.API.Bot
 
 --модуль для парсинга http://www.haskell.org/hoogle/
-import Hoogle 
+import Hoogle
 
 main :: IO ()
 main = do
@@ -118,18 +118,18 @@ processUpdate token manager update = void $ runMaybeT $ do
         -- старт - магия мемасов
         startCmd msg args = do sendImg msg "https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg"
         -- хелп - справка
-        helpCmd msg args = 
-          do sendReply msg $ "Для того, чтобы воспользоваться ботом необходимо ввести " <> 
+        helpCmd msg args =
+          do sendReply msg $ "Для того, чтобы воспользоваться ботом необходимо ввести " <>
                             "команду hoogle с параметрами (либо названием функции, " <>
                             "для которой требуется получить описание, либо её сигнатуру)"
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
           HoogleResponse { results = res } <- hoogle args 0 5
-          when (T.length args > 0 && length res > 0) $ do 
+          when (T.length args > 0 && length res > 0) $ do
             sendReply msg $ formatHoogleResults res
- 
-        formatHoogleResults = 
-          L.foldl1' (\x y -> x <> "  \n" <> y) . map (("1. " <>) . formatHoogleResult)
 
-        formatHoogleResult res = 
+        formatHoogleResults =
+          L.foldl1' (\x y -> x <> "  \n" <> y) . map (("-- " <>) . formatHoogleResult)
+
+        formatHoogleResult res =
           self res <> "  \n" <> docs res <> "  \n" <> Hoogle.location res
