@@ -128,7 +128,6 @@ processUpdate token manager update = void $ runMaybeT $ do
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
           HoogleResponse { results = res } <- hoogle args 5
-          when (T.length args == 0) $ do sendReply msg $ "Not found: " <> args
           when (T.length args > 0) $ do
             case (length res) of
                 0 -> sendReply msg $ "Not found: " <> args
