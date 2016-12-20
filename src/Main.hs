@@ -26,12 +26,12 @@ import Data.Monoid ((<>))
 import Data.Text (pack)
 import qualified Data.Text as T (take, drop, length)
 
---низкоуровневый API для хттп 
+--низкоуровневый API для хттп
 import Network.HTTP.Client (newManager, Manager)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
 
 --телеграмный API
-import Web.Telegram.API.Bot 
+import Web.Telegram.API.Bot
 
 main :: IO ()
 main = do
@@ -92,31 +92,32 @@ processUpdate token manager update = void $ runMaybeT $ do
           let
             chatId = pack $ show $ chat_id $ chat msg
             request = sendMessageRequest chatId reply
-          void $ liftIO $ sendMessage token request manager    
+          void $ liftIO $ sendMessage token request manager
 
         --функция для отправки картинки в чат
         sendImg msg img = do
           let
             chatId = pack $ show $ chat_id $ chat msg
-            request = sendPhotoRequest chatId img 
+            request = sendPhotoRequest chatId img
           void $ liftIO $ sendPhoto token request manager
-  
+
         -- функция возвращает функцию, если есть соответствующая ей команда
         tryProcessCommand msg txt = isJustT $ do
           (cmd, handler) <- hoistMaybe $ L.find (checkCommand txt) commands
           handler msg (T.drop (T.length cmd + 2) txt)
-        
+
         -- функция проверяет - есть ли такая команда (cmd) в списке команд (commands)
         checkCommand txt (cmd, _) = T.take (T.length cmd + 2) txt == "/" <> cmd
 
         -- список команд, которые принимает бот
         commands = [ ("start", startCmd), ("help", helpCmd), ("hoogle", hoogleCmd) ]
-            
+
         -- старт - магия мемасов
         startCmd msg args = do sendImg msg "https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg"
         -- хелп - надо справку по использованию бота написать
-        helpCmd msg args = do sendReply msg "здесь должна быть справка"
+        helpCmd msg args = do sendReply msg "Для того, чтобы воспользоваться
+        ботом необходимо ввести команду "hoogle" с параметрами (либо названием
+        функции, для которой требуется получить описание, либо её сигнатуру)"
         -- команда, которая парсит хугл и возвращает справку по функциям
         -- наше основное заднание, ну вы поняли
-        -- делайте давайте
         hoogleCmd msg args = do sendReply msg "хугл"
