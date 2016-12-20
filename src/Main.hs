@@ -33,6 +33,8 @@ import Network.HTTP.Client.TLS (tlsManagerSettings)
 --телеграмный API
 import Web.Telegram.API.Bot
 
+import Hoogle (hoogle, HoogleResponse(..), HoogleResult(..))
+
 main :: IO ()
 main = do
   -- менеджер хттп-соединения с сервером телеграма по безопасному протоколу(tls)
@@ -115,9 +117,13 @@ processUpdate token manager update = void $ runMaybeT $ do
         -- старт - магия мемасов
         startCmd msg args = do sendImg msg "https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg"
         -- хелп - надо справку по использованию бота написать
-        helpCmd msg args = do sendReply msg "Для того, чтобы воспользоваться
-        ботом необходимо ввести команду hoogle с параметрами (либо названием
-        функции, для которой требуется получить описание, либо её сигнатуру)"
+        helpCmd msg args = do sendReply msg "Для того, чтобы воспользоваться ботом необходимо ввести команду hoogle с параметрами (либо названием функции, для которой требуется получить описание, либо её сигнатуру)"
         -- команда, которая парсит хугл и возвращает справку по функциям
-        -- наше основное заднание, ну вы поняли
-        hoogleCmd msg args = do sendReply msg "хугл"
+        hoogleCmd msg args = do
+          HoogleResponse { results = res } <- hoogle args 0 5
+          sendReply msg $ formatHoogleResults res
+
+        formatHoogleResults =
+          L.foldl1' (\x y -> x <> "  \n" <> y) . map (("- " <>) . formatHoogleResult)
+        formatHoogleResult res =
+          self res <> "  \n" <> docs res <> "  \n" <> Hoogle.location res
