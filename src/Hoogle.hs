@@ -25,36 +25,18 @@ import Data.ByteString.Char8 (ByteString, unpack, pack)
 import Network.HTTP.Simple (Request, parseRequest, httpJSON, getResponseBody)
 import Network.HTTP.Types.URI (renderSimpleQuery)
 
-data HoogleResult = HoogleResult
-  { location :: Text
-  , self :: Text
-  , docs :: Text
-  }
-
+data HoogleResult = HoogleResult { self :: Text, docs :: Text, location :: Text }
 $(deriveJSON defaultOptions ''HoogleResult)
 
-data HoogleResponse = HoogleResponse
-  { version :: Text
-  , results :: [HoogleResult]
-  }
-
+data HoogleResponse = HoogleResponse { results :: [HoogleResult] }
 $(deriveJSON defaultOptions ''HoogleResponse)
 
-hoogleUrl :: ByteString
-hoogleUrl = "http://www.haskell.org/hoogle/"
-
-hoogle :: (MonadThrow m, MonadIO m) => Text -> Int -> Int -> m HoogleResponse
-hoogle query start count = do
-  req <- hoogleRequest (encodeUtf8 query) start count
+hoogle :: (MonadThrow m, MonadIO m) => Text -> Int -> m HoogleResponse
+hoogle query count = do
+  req <- makeRequest (encodeUtf8 query) count
   getResponseBody <$> httpJSON req
 
-hoogleRequest :: (MonadThrow m) => ByteString -> Int -> Int -> m Request
-hoogleRequest queryText start count = do
-  let
-    qs =
-      [ ("mode", "json")
-      , ("hoogle", queryText)
-      , ("start", pack (show start))
-      , ("count", pack (show count))
-      ]
-  parseRequest $ unpack $ hoogleUrl <> renderSimpleQuery True qs
+makeRequest :: (MonadThrow m) => ByteString -> Int -> m Request
+makeRequest queryText count = do
+  let qs = [ ("mode", "json"), ("hoogle", queryText), ("start", pack (show 0)), ("count", pack (show count))]
+  parseRequest $ unpack $ "http://www.haskell.org/hoogle/" <> renderSimpleQuery True qs
