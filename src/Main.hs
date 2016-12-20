@@ -33,7 +33,8 @@ import Network.HTTP.Client.TLS (tlsManagerSettings)
 --телеграмный API
 import Web.Telegram.API.Bot
 
-import Hoogle (hoogle, HoogleResponse(..), HoogleResult(..))
+--модуль для парсинга http://www.haskell.org/hoogle/
+import Hoogle 
 
 main :: IO ()
 main = do
@@ -84,7 +85,7 @@ processUpdate token manager update = void $ runMaybeT $ do
     -- то в консоль выводятся все приходящие сообщения
     -- txt - только само сообщение (что пользователь написал в чат), без другой инфы
     txt <- hoistMaybe $ text msg
-    -- liftIO $ print txt
+    --liftIO $ print txt
     processed <- lift $ tryProcessCommand msg txt
     -- если команда не распознана, то посылаем это сообщение:
     when (not processed) $ do sendReply msg "Not recognized"
@@ -109,7 +110,7 @@ processUpdate token manager update = void $ runMaybeT $ do
           handler msg (T.drop (T.length cmd + 2) txt)
 
         -- функция проверяет - есть ли такая команда (cmd) в списке команд (commands)
-        checkCommand txt (cmd, _) = T.take (T.length cmd + 2) txt == "/" <> cmd
+        checkCommand txt (cmd, _) = T.take (T.length cmd + 1) txt == "/" <> cmd
 
         -- список команд, которые принимает бот
         commands = [ ("start", startCmd), ("help", helpCmd), ("hoogle", hoogleCmd) ]
@@ -121,9 +122,8 @@ processUpdate token manager update = void $ runMaybeT $ do
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
           HoogleResponse { results = res } <- hoogle args 0 5
-          sendReply msg $ formatHoogleResults res
+          when (T.length args > 0 && length res > 0) $ do sendReply msg $ formatHoogleResults res
+ 
+        formatHoogleResults = L.foldl1' (\x y -> x <> "  \n" <> y) . map (("1. " <>) . formatHoogleResult)
 
-        formatHoogleResults =
-          L.foldl1' (\x y -> x <> "  \n" <> y) . map (("- " <>) . formatHoogleResult)
-        formatHoogleResult res =
-          self res <> "  \n" <> docs res <> "  \n" <> Hoogle.location res
+        formatHoogleResult res = self res <> "  \n" <> docs res <> "  \n" <> Hoogle.location res
