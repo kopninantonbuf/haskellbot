@@ -131,7 +131,6 @@ processUpdate token manager update = void $ runMaybeT $ do
                 _ -> sendReply msg $ formatHoogleResults res
 
         formatHoogleResults =
-          L.foldl1' (\x y -> x <> "  \n" <> y) . map (("-----------------------------\n " <>) . formatHoogleResult)
+          L.foldl1' (\x y -> x <> "  \n" <> y) . map (("-----------------------------\n" <>) . formatHoogleResult)
 
         formatHoogleResult res =
-          "-- " <> self res <> "  \n\nDescription: \n" <> docs res <> "  \n" <> Hoogle.location res
