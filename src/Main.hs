@@ -124,9 +124,11 @@ processUpdate token manager update = void $ runMaybeT $ do
                             "для которой требуется получить описание, либо её сигнатуру)"
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
-          HoogleResponse { results = res } <- hoogle args 0 7
-          when (T.length args > 0 && length res > 0) $ do
-            sendReply msg $ formatHoogleResults res
+          HoogleResponse { results = res } <- hoogle args 0 5
+          when (T.length args > 0) $ do
+            case (length res) of
+                0 -> sendReply msg $ "Not found: " <> args
+                _ -> sendReply msg $ formatHoogleResults res
 
         formatHoogleResults =
           L.foldl1' (\x y -> x <> "  \n" <> y) . map (("-----------------------------\n " <>) . formatHoogleResult)
