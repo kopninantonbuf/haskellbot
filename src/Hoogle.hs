@@ -25,17 +25,21 @@ import Data.ByteString.Char8 (ByteString, unpack, pack)
 import Network.HTTP.Simple (Request, parseRequest, httpJSON, getResponseBody)
 import Network.HTTP.Types.URI (renderSimpleQuery)
 
+-- Структура, формирующая результат.
 data HoogleResult = HoogleResult { self :: Text, docs :: Text, location :: Text }
 $(deriveJSON defaultOptions ''HoogleResult)
 
+- Структура запроса.
 data HoogleResponse = HoogleResponse { results :: [HoogleResult] }
 $(deriveJSON defaultOptions ''HoogleResponse)
 
+-- Функция, которая делает запрос на Hoogle.org  и возвращает ответ.
 hoogle :: (MonadThrow m, MonadIO m) => Text -> Int -> m HoogleResponse
 hoogle query count = do
   req <- makeRequest (encodeUtf8 query) count
   getResponseBody <$> httpJSON req
 
+-- Функция, которая формирует запрос на Hoogle.org.
 makeRequest :: (MonadThrow m) => ByteString -> Int -> m Request
 makeRequest queryText count = do
   let qs = [ ("mode", "json"), ("hoogle", queryText), ("start", pack (show 0)), ("count", pack (show count))]
