@@ -29,7 +29,7 @@ import Network.HTTP.Types.URI (renderSimpleQuery)
 data HoogleResult = HoogleResult { self :: Text, docs :: Text, location :: Text }
 $(deriveJSON defaultOptions ''HoogleResult)
 
-- Структура запроса.
+-- Структура ответа.
 data HoogleResponse = HoogleResponse { results :: [HoogleResult] }
 $(deriveJSON defaultOptions ''HoogleResponse)
 
