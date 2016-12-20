@@ -1,26 +1,31 @@
 {-# LANGUAGE OverloadedStrings #-}
+
+-- Подключаем TemplateHaskell, чтобы пользоваться библиотекой Data.Aeson.TH.
 {-# LANGUAGE TemplateHaskell #-}
 
-module Hoogle (hoogle, HoogleResponse(..), HoogleResult(..)) where
+module Hoogle where
 
 import Control.Monad.Catch (MonadThrow)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Monoid ((<>))
 
--- Библиотека для парсинга и кодирования данных в формате JSON.
+-- Библиотека для автоматической генерации экземпляров класса ToJSON и FromJSON
+-- для заданного типа данных на этапе компиляции.
 import Data.Aeson.TH (deriveJSON, defaultOptions)
 
--- Чтоб не использовать String.
+-- Эффективная по времени и памяти реализация текста Unicode. Чтобы
+-- не использовать String.
 import Data.Text (Text)
 import Data.Text.Encoding (encodeUtf8)
+
+-- Библиотека позволяет работать с типом ByteString, используя функции Char.
 import Data.ByteString.Char8 (ByteString, unpack, pack)
 
 -- API для работы с протоколом HTTP.
 import Network.HTTP.Simple (Request, parseRequest, httpJSON, getResponseBody)
 import Network.HTTP.Types.URI (renderSimpleQuery)
 
-data HoogleResult =
-  HoogleResult
+data HoogleResult = HoogleResult
   { location :: Text
   , self :: Text
   , docs :: Text
@@ -28,16 +33,15 @@ data HoogleResult =
 
 $(deriveJSON defaultOptions ''HoogleResult)
 
-data HoogleResponse =
-  HoogleResponse
+data HoogleResponse = HoogleResponse
   { version :: Text
   , results :: [HoogleResult]
   }
 
 $(deriveJSON defaultOptions ''HoogleResponse)
 
-hoogleBaseUrl :: ByteString
-hoogleBaseUrl = "http://www.haskell.org/hoogle/"
+hoogleUrl :: ByteString
+hoogleUrl = "http://www.haskell.org/hoogle/"
 
 hoogle :: (MonadThrow m, MonadIO m) => Text -> Int -> Int -> m HoogleResponse
 hoogle query start count = do
@@ -53,4 +57,4 @@ hoogleRequest queryText start count = do
       , ("start", pack (show start))
       , ("count", pack (show count))
       ]
-  parseRequest $ unpack $ hoogleBaseUrl <> renderSimpleQuery True qs
+  parseRequest $ unpack $ hoogleUrl <> renderSimpleQuery True qs

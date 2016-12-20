@@ -133,13 +133,12 @@ processUpdate token manager update = void $ runMaybeT $ do
           HoogleResponse { results = res } <- hoogle args 0 5
           --when (T.length args == 0) $ do sendReply msg $ "Not found: " <> args
           when (T.length args > 0) $ do
-            case (length res) of 
-                0 -> sendReply msg $ "Not found: " <> args    
+            case (length res) of
+                0 -> sendReply msg $ "Not found: " <> args
                 _ -> sendReply msg $ formatHoogleResults res
-                      
 
         formatHoogleResults =
-          L.foldl1' (\x y -> x <> "  \n" <> y) . map (("-- " <>) . formatHoogleResult)
+          L.foldl1' (\x y -> x <> "  \n" <> y) . map (("-----------------------------\n" <>) . formatHoogleResult)
 
         formatHoogleResult res =
-          self res <> "  \n" <> docs res <> "  \n" <> Hoogle.location res
+          "-- " <> self res <> "  \n\nDescription: \n" <> docs res <> "... \n" <> Hoogle.location res <> "\n\n"
