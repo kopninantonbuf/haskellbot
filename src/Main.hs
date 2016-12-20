@@ -88,8 +88,11 @@ processUpdate token manager update = void $ runMaybeT $ do
     --liftIO $ print txt
     processed <- lift $ tryProcessCommand msg txt
     -- если команда не распознана, то посылаем это сообщение:
-    when (not processed) $ do sendReply msg "Not recognized"
+    when (not processed) $ do sendReply msg "Этого я не умею. Если запутался, воспользуйся командой help"
       where
+        -- функция ответа на несуществующую функцию
+
+
         -- функция для отправки ответа в чат телеграма
         sendReply msg reply = do
           let
@@ -122,6 +125,7 @@ processUpdate token manager update = void $ runMaybeT $ do
           do sendReply msg $ "Для того, чтобы воспользоваться ботом необходимо ввести " <>
                             "команду hoogle с параметрами (либо названием функции, " <>
                             "для которой требуется получить описание, либо её сигнатуру)"
+
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
           HoogleResponse { results = res } <- hoogle args 0 5
