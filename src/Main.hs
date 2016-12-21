@@ -122,14 +122,22 @@ processUpdate token manager update = void $ runMaybeT $ do
           do sendReply msg $ "Для того, чтобы воспользоваться ботом необходимо ввести " <>
                             "команду hoogle с параметрами (либо названием функции, " <>
                             "для которой требуется получить описание, либо её сигнатуру)"
-        setConst msg args =
-          do sendReply msg $ "Мяу :)"
+
+        setConst msg args = do
+        	case (T.length args) of
+        		0 -> sendReply msg $ "Количество показываемых функций: " <> args
+        		_ -> sendReply msg $ "Задано число показываемых функций: " <> args
+          --do sendReply msg $ "Количество показываемых функций: "
 
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
           HoogleResponse { results = res } <- hoogle args 5
-          when (T.length args == 0) $ do sendReply msg $ "Not found: " <> args
+          when (T.length args == 0) $ do sendReply msg $ "Команде требуется параметр" <> args
           when (T.length args > 0) $ do
             case (length res) of
                 0 -> sendReply msg $ "Not found: " <> args
                 _ -> sendReply msg $ hoogleResults res
+
+--type CountFunc = TVar Integer
+
+
