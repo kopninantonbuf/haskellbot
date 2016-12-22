@@ -10,7 +10,8 @@ import Control.Concurrent.STM.TVar (writeTVar, newTVar, readTVar)
 -- для обработки ошибок
 import Control.Error.Util (hoistMaybe, isJustT)
 
-import Control.Monad (void, when)
+
+import Control.Monad --(void, when)
 import Control.Monad.Catch (MonadThrow)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Trans.Class (lift)
@@ -41,8 +42,28 @@ import Hoogle
 type CountFuncUser = TVar Integer
 
 --Список пар, хранящий количество показываемых функций для каждого пользователя
-type ListUserCount = [(Text, CountFuncUser)]
+--type ListUserCount = [(T.Text, Integer)]
 
+--Получение настроек по idChat
+--getCount :: ListUserCount -> T.Text -> Integer
+--getCount arrData idChat = snd $ head $ filter (\x -> x == (idChat, _)) arrData
+
+--atomRead :: TVar Integer -> IO Integer
+atomRead = atomically . readTVar
+appVH a x = atomically $ readTVar a >>= writeTVar x 
+
+countMy :: Int
+countMy = 2 --atomically $ newTVar 5	
+
+myMain x = do
+	  shared <- atomically $ newTVar countMy
+	  b <- atomically $ newTVar x
+          before <- atomRead shared
+          --putStrLn $ "Before: " ++ show before
+          appVH b shared 
+          after <- atomRead shared
+          --putStrLn $ "After: " ++ show after
+ 
 main :: IO ()
 main = do
 
@@ -50,7 +71,6 @@ main = do
   manager <- newManager tlsManagerSettings
   -- токен бота
   let token = Token "bot319624564:AAE_fb6q_eTI942c4K7wpC4kNReC28939RI"
-  let countMy = newTVar 5	
   -- основная функция
   -- нафинги нужны для getUpdates
   -- оператор $$ передает данные из botUpdates в processUpdate, вообще офигеть
@@ -133,21 +153,23 @@ processUpdate token manager update = void $ runMaybeT $ do
                             "команду hoogle с параметрами (либо названием функции, " <>
                             "для которой требуется получить описание, либо её сигнатуру)"
        -- команда, позволяющая установить количество функций, выводимых после команды hoogle
-        setConst msg args = do
+        setConst msg args = do 
         	case (T.length args) of
-        		0 -> sendReply msg $ "Количество показываемых функций: " <> readTVar countMy
+        		0 -> sendReply msg $ "Количество показываемых функций: " <> " "
         		_ -> sendReply msg $ "Задано число показываемых функций: " <> args
 
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
-        	count <- readTVar countMy
-          HoogleResponse { results = res } <- hoogle args count
+          --t <- atomRead countMy
+          HoogleResponse { results = res } <- hoogle args countMy
           case (T.length args) of
             0 -> sendReply msg $ "Введите запрос ( /hoogle запрос )"
             _ -> do
               case (length res) of
                   0 -> sendReply msg $ "Не найдено: " <> args
                   _ -> sendReply msg $ hoogleResults res
+        --sendReply msg $ "Введите запрос ( /hoogle запрос )" ++ show $ atomically $ readTVar countMy
+
 --type CountFunc = TVar Integer
 
-
+--добавить список, хранящий
