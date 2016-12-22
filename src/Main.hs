@@ -90,7 +90,7 @@ processUpdate token manager update = void $ runMaybeT $ do
     --liftIO $ print txt
     processed <- lift $ tryProcessCommand msg txt
     -- если команда не распознана, то посылаем это сообщение:
-    when (not processed) $ do sendReply msg "Этого я не умею. Если запутался, воспользуйся командой help"
+    when (not processed) $ do sendReply msg "Команда не найдена"
       where
         -- функция для отправки ответа в чат телеграма
         sendReply msg reply = do
@@ -115,24 +115,31 @@ processUpdate token manager update = void $ runMaybeT $ do
         findCmd txt (cmd, _) = T.take (T.length cmd + 1) txt == "/" <> cmd
 
         -- список команд, которые принимает бот
-        commands = [ ("start", startCmd), ("help", helpCmd), ("hoogle", hoogleCmd), ("settings",setConst) ]
+        commands = [ ("start", startCmd), ("help", helpCmd), ("hoogle", hoogleCmd), ("settings", setConst) ]
 
         -- старт - магия мемасов
         startCmd msg args = do sendImg msg "https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg"
+
         -- хелп - справка
         helpCmd msg args =
           do sendReply msg $ "Для того, чтобы воспользоваться ботом необходимо ввести " <>
                             "команду hoogle с параметрами (либо названием функции, " <>
                             "для которой требуется получить описание, либо её сигнатуру)"
 
+<<<<<<< HEAD
         setConst msg args = do
         	case (T.length args) of
         		0 -> sendReply msg $ "Количество показываемых функций: " <> countFuncUser
         		_ -> sendReply msg $ "Задано число показываемых функций: " <> args
+=======
+        setConst msg args =
+          do sendReply msg $ "Мяу :)"
+>>>>>>> c62fabc4b51f550ef5371e047d02b5406ee9672c
 
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
           HoogleResponse { results = res } <- hoogle args 5
+<<<<<<< HEAD
           when (T.length args == 0) $ do sendReply msg $ "Команде требуется параметр" <> args
           when (T.length args > 0) $ do
             case (length res) of
@@ -141,4 +148,12 @@ processUpdate token manager update = void $ runMaybeT $ do
 
 --type CountFunc = TVar Integer
 
+=======
+          case (T.length args) of
+            0 -> sendReply msg $ "Введите запрос ( /hoogle запрос )"
+            _ -> do
+              case (length res) of
+                  0 -> sendReply msg $ "Не найдено: " <> args
+                  _ -> sendReply msg $ hoogleResults res
+>>>>>>> c62fabc4b51f550ef5371e047d02b5406ee9672c
 
