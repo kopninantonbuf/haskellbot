@@ -3,7 +3,8 @@
 module Main where
 
 -- программная транзакционная память, воу!
-import Control.Concurrent.STM (atomically)
+--import Control.Concurrent
+import Control.Concurrent.STM 
 import Control.Concurrent.STM.TVar (writeTVar, newTVar, readTVar)
 
 -- для обработки ошибок
@@ -36,14 +37,20 @@ import Web.Telegram.API.Bot
 --модуль для парсинга http://www.haskell.org/hoogle/
 import Hoogle
 
---type countFuncUser = Integer
+-- 
+type CountFuncUser = TVar Integer
+
+--Список пар, хранящий количество показываемых функций для каждого пользователя
+type ListUserCount = [(Text, CountFuncUser)]
 
 main :: IO ()
 main = do
+
   -- менеджер хттп-соединения с сервером телеграма по безопасному протоколу(tls)
   manager <- newManager tlsManagerSettings
   -- токен бота
   let token = Token "bot319624564:AAE_fb6q_eTI942c4K7wpC4kNReC28939RI"
+  let countMy = newTVar 5	
   -- основная функция
   -- нафинги нужны для getUpdates
   -- оператор $$ передает данные из botUpdates в processUpdate, вообще офигеть
@@ -125,14 +132,16 @@ processUpdate token manager update = void $ runMaybeT $ do
           do sendReply msg $ "Для того, чтобы воспользоваться ботом необходимо ввести " <>
                             "команду hoogle с параметрами (либо названием функции, " <>
                             "для которой требуется получить описание, либо её сигнатуру)"
-
+       -- команда, позволяющая установить количество функций, выводимых после команды hoogle
         setConst msg args = do
         	case (T.length args) of
-        		0 -> sendReply msg $ "Количество показываемых функций: " <> countFuncUser
+        		0 -> sendReply msg $ "Количество показываемых функций: " <> readTVar countMy
         		_ -> sendReply msg $ "Задано число показываемых функций: " <> args
+
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
-          HoogleResponse { results = res } <- hoogle args 5
+        	count <- readTVar countMy
+          HoogleResponse { results = res } <- hoogle args count
           case (T.length args) of
             0 -> sendReply msg $ "Введите запрос ( /hoogle запрос )"
             _ -> do

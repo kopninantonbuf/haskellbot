@@ -29,6 +29,7 @@ import Data.ByteString.Char8 (ByteString, unpack, pack)
 import Network.HTTP.Simple (Request, parseRequest, httpJSON, getResponseBody)
 import Network.HTTP.Types.URI (renderSimpleQuery)
 
+
 -- Структура описания одной функции.
 data HoogleResult = HoogleResult { self :: Text, docs :: Text, location :: Text }
 $(deriveJSON defaultOptions ''HoogleResult)
