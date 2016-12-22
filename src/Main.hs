@@ -36,6 +36,8 @@ import Web.Telegram.API.Bot
 --модуль для парсинга http://www.haskell.org/hoogle/
 import Hoogle
 
+type countFuncUser = Integer
+
 main :: IO ()
 main = do
   -- менеджер хттп-соединения с сервером телеграма по безопасному протоколу(tls)
@@ -125,9 +127,8 @@ processUpdate token manager update = void $ runMaybeT $ do
 
         setConst msg args = do
         	case (T.length args) of
-        		0 -> sendReply msg $ "Количество показываемых функций: " <> args
+        		0 -> sendReply msg $ "Количество показываемых функций: " <> countFuncUser
         		_ -> sendReply msg $ "Задано число показываемых функций: " <> args
-          --do sendReply msg $ "Количество показываемых функций: "
 
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
