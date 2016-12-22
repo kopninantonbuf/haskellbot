@@ -56,15 +56,17 @@ appVH a x = atomically $ readTVar a >>= writeTVar x
 countMy :: Int
 countMy = 2 
 
-myMain :: Int -> IO String
-myMain x = do
+--CountFuncUser
+
+setConst :: Int -> IO String
+setConst x = do
 	  shared <- atomically $ newTVar countMy
 	  b <- atomically $ newTVar x
           before <- atomRead shared
           putStrLn $ "Before: " ++ show before
           appVH b shared 
-          after <- atomRead shared
-          putStrLn $ "After: " ++ show after
+          countMy <- atomRead shared
+          putStrLn $ "After: " ++ show countMy
           return $ show x
 
 helpF :: String -> Text
@@ -151,7 +153,7 @@ processUpdate token manager update = void $ runMaybeT $ do
         findCmd txt (cmd, _) = T.take (T.length cmd + 1) txt == "/" <> cmd
 
         -- список команд, которые принимает бот
-        commands = [ ("start", startCmd), ("help", helpCmd), ("hoogle", hoogleCmd), ("settings", setConst) ]
+        commands = [ ("start", startCmd), ("help", helpCmd), ("hoogle", hoogleCmd), ("settings", settingsCmd) ]
 		
         -- старт - магия мемасов
         startCmd msg args = do sendImg msg "https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg"
@@ -163,12 +165,12 @@ processUpdate token manager update = void $ runMaybeT $ do
                             "для которой требуется получить описание, либо её сигнатуру)"
 
        -- команда, позволяющая установить количество функций, выводимых после команды hoogle
-        setConst msg args = do 
+        settingsCmd msg args = do 
         	--sendReply msg $ helpFrgs
         	-- (myMain $ read $ unpack args) >>= show
         	case (T.length args) of
         		0 -> sendReply msg $ pack $ "Количество показываемых функций: " ++ show countMy
-        		_ -> sendReply msg $  helpF $ unsafePerformIO (myMain $ read $ unpack args)
+        		_ -> sendReply msg $  helpF $ unsafePerformIO (setConst $ read $ unpack args)
 
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
