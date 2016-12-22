@@ -63,7 +63,6 @@ textSettings x = pack $ "Задано число показываемых фун
 
 main :: IO ()
 main = do
-
   -- менеджер хттп-соединения с сервером телеграма по безопасному протоколу(tls)
   manager <- newManager tlsManagerSettings
   -- токен бота
@@ -71,13 +70,12 @@ main = do
   -- основная функция
   -- нафинги нужны для getUpdates
   -- оператор $$ передает данные из botUpdates в processUpdate, вообще офигеть
-  botUpdates token Nothing Nothing Nothing manager $$ DC.mapM_ (processUpdate token manager)
+  botUpdates token Nothing Nothing (Just 1) manager $$ DC.mapM_ (processUpdate token manager)
 
 -- приём входящих сообщений
 -- offset - идентификатор входящих сообщений (с каждым сообщением увеличивается на 1)
 -- limit - макс. кол-во сообщений принятых за раз (= 100 по дефолту)
--- timeout - задержка в секундах для работы getUpdates (= 0 по дефолту)
--- пишут, что надо поставить таймаут больше 0, не знаю зачем, вроде и так работает
+-- timeout - задержка в секундах для long polling (= 0 по дефолту)
 -- https://core.telegram.org/bots/API - тут вся инфа, в общем
 botUpdates :: (MonadIO m) => Token -> Maybe Int -> Maybe Int -> Maybe Int -> Manager -> Source m Update
 botUpdates token offset limit timeout manager = do
