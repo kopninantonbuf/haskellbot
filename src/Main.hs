@@ -3,7 +3,6 @@
 module Main where
 
 -- программная транзакционная память, воу!
---import Control.Concurrent
 import Control.Concurrent.STM 
 import Control.Concurrent.STM.TVar (writeTVar, newTVar, readTVar)
 
@@ -12,7 +11,6 @@ import System.IO.Unsafe (unsafePerformIO)
 import Control.Error.Util (hoistMaybe, isJustT)
 
 import Control.Monad
-import Control.Monad (void, when)
 import Control.Monad.Catch (MonadThrow)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Trans.Class (lift)
@@ -54,17 +52,13 @@ appVH a x = atomically $ readTVar a >>= writeTVar x
 countFuncUser :: TVar Int
 countFuncUser = unsafePerformIO $ newTVarIO 0
 
-countMy :: Int
-countMy = 2 
---CountFuncUser
-
 setConst :: Int -> IO Int
 setConst x = atomically $ do
 	          writeTVar countFuncUser x
           	  return x
 
-helpF :: String -> Text
-helpF x = pack $ "Задано число показываемых функций: " ++ show x
+textSettings :: String -> Text
+textSettings x = pack $ "Задано число показываемых функций: " ++ show x
 
 main :: IO ()
 main = do
@@ -160,15 +154,12 @@ processUpdate token manager update = void $ runMaybeT $ do
 
        -- команда, позволяющая установить количество функций, выводимых после команды hoogle
         settingsCmd msg args = do 
-        	--sendReply msg $ helpFrgs
-        	-- (myMain $ read $ unpack args) >>= show
         	case (T.length args) of
         		0 -> sendReply msg $ pack $ "Количество показываемых функций: " ++ show (unsafePerformIO $ atomRead countFuncUser)
-        		_ -> sendReply msg $  helpF $ show $ unsafePerformIO (setConst $ read $ unpack args)
+        		_ -> sendReply msg $ textSettings $ show $ unsafePerformIO (setConst $ read $ unpack args)
 
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
-          --t <- atomRead countMy
           HoogleResponse { results = res } <- hoogle args (unsafePerformIO $ atomRead countFuncUser)
           case (T.length args) of
             0 -> sendReply msg $ "Введите запрос ( /hoogle запрос )"
@@ -176,6 +167,3 @@ processUpdate token manager update = void $ runMaybeT $ do
               case (Prelude.length res) of
                   0 -> sendReply msg $ "Не найдено: " <> args
                   _ -> sendReply msg $ hoogleResults res
-
-
---добавить список, хранящий
