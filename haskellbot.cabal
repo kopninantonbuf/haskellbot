@@ -3,8 +3,8 @@ version:             0.1.0.4
 synopsis:            haskellbot
 description:         Please see README.md
 homepage:            https://github.com/kopninantonbuf/haskellbot
-author:              students
-maintainer:          students@students
+author:              students (Stepin, Kopnin, Zaharova)
+maintainer:          kopninantonbuf@sfedu.ru
 copyright:           2016
 category:            Web
 build-type:          Simple

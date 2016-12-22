@@ -3,7 +3,7 @@
 module Main where
 
 -- программная транзакционная память, воу!
-import Control.Concurrent.STM 
+import Control.Concurrent.STM
 import Control.Concurrent.STM.TVar (writeTVar, newTVar, readTVar)
 
 import System.IO.Unsafe (unsafePerformIO)
@@ -48,7 +48,7 @@ import Hoogle
 
 --atomRead :: TVar Integer -> IO Integer
 atomRead = atomically . readTVar
-appVH a x = atomically $ readTVar a >>= writeTVar x 
+appVH a x = atomically $ readTVar a >>= writeTVar x
 
 countFuncUser :: TVar Int
 countFuncUser = unsafePerformIO $ newTVarIO 5
@@ -140,7 +140,9 @@ processUpdate token manager update = void $ runMaybeT $ do
         commands = [ ("start", startCmd), ("help", helpCmd), ("hoogle", hoogleCmd), ("settings", settingsCmd) ]
 
         -- старт - магия мемасов
-        startCmd msg args = do sendImg msg "https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg"
+        startCmd msg args = do
+          sendImg msg "https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg"
+          sendReply msg $ "Добро пожаловать!"
 
         -- хелп - справка
         helpCmd msg args =
@@ -149,9 +151,9 @@ processUpdate token manager update = void $ runMaybeT $ do
                             "для которой требуется получить описание, либо её сигнатуру)"
 
        -- команда, позволяющая установить количество функций, выводимых после команды hoogle
-        settingsCmd msg args = do 
+        settingsCmd msg args = do
           case (T.length args) of
-            0 -> sendReply msg $ pack $ "Количество показываемых функций: " <> 
+            0 -> sendReply msg $ pack $ "Количество показываемых функций: " <>
                 show (unsafePerformIO $ atomRead countFuncUser)
             _ -> sendReply msg $ textSettings $ show $ unsafePerformIO (setConst $ read $ unpack args)
 
@@ -164,4 +166,3 @@ processUpdate token manager update = void $ runMaybeT $ do
               case (Prelude.length res) of
                   0 -> sendReply msg $ "Не найдено: " <> args
                   _ -> sendReply msg $ hoogleResults res
-
