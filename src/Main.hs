@@ -51,7 +51,7 @@ atomRead = atomically . readTVar
 appVH a x = atomically $ readTVar a >>= writeTVar x 
 
 countFuncUser :: TVar Int
-countFuncUser = unsafePerformIO $ newTVarIO 0
+countFuncUser = unsafePerformIO $ newTVarIO 5
 
 setConst :: Int -> IO Int
 setConst x = atomically $ do
