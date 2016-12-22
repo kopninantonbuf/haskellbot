@@ -7,6 +7,7 @@ import Control.Concurrent.STM
 import Control.Concurrent.STM.TVar (writeTVar, newTVar, readTVar)
 
 import System.IO.Unsafe (unsafePerformIO)
+
 -- для обработки ошибок
 import Control.Error.Util (hoistMaybe, isJustT)
 
@@ -24,7 +25,7 @@ import qualified Data.List as L (find, foldl1')
 import Data.Monoid ((<>))
 
 --стринги это не круто, поэтому Data.Text
-import Data.Text --(pack, unpack)
+import Data.Text (Text, pack, unpack)
 import qualified Data.Text as T (take, drop, length)
 
 --низкоуровневый API для хттп
@@ -54,11 +55,11 @@ countFuncUser = unsafePerformIO $ newTVarIO 0
 
 setConst :: Int -> IO Int
 setConst x = atomically $ do
-	          writeTVar countFuncUser x
-          	  return x
+  writeTVar countFuncUser x
+  return x
 
 textSettings :: String -> Text
-textSettings x = pack $ "Задано число показываемых функций: " ++ show x
+textSettings x = pack $ "Задано число показываемых функций: " <> show x
 
 main :: IO ()
 main = do
@@ -100,9 +101,6 @@ botUpdates token offset limit timeout manager = do
                 liftIO $ atomically $ writeTVar oldOffset newOffset
                 return batch
 
--- pack $ "Задано число показываемых функций: " ++
-
-
 -- обработка входящего сообщения и какая-то дичь с войдами
 processUpdate :: (MonadThrow m, MonadIO m) => Token -> Manager -> Update -> m ()
 processUpdate token manager update = void $ runMaybeT $ do
@@ -142,7 +140,7 @@ processUpdate token manager update = void $ runMaybeT $ do
 
         -- список команд, которые принимает бот
         commands = [ ("start", startCmd), ("help", helpCmd), ("hoogle", hoogleCmd), ("settings", settingsCmd) ]
-		
+
         -- старт - магия мемасов
         startCmd msg args = do sendImg msg "https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg"
 
@@ -154,9 +152,10 @@ processUpdate token manager update = void $ runMaybeT $ do
 
        -- команда, позволяющая установить количество функций, выводимых после команды hoogle
         settingsCmd msg args = do 
-        	case (T.length args) of
-        		0 -> sendReply msg $ pack $ "Количество показываемых функций: " ++ show (unsafePerformIO $ atomRead countFuncUser)
-        		_ -> sendReply msg $ textSettings $ show $ unsafePerformIO (setConst $ read $ unpack args)
+          case (T.length args) of
+            0 -> sendReply msg $ pack $ "Количество показываемых функций: " <> 
+                show (unsafePerformIO $ atomRead countFuncUser)
+            _ -> sendReply msg $ textSettings $ show $ unsafePerformIO (setConst $ read $ unpack args)
 
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
@@ -167,3 +166,4 @@ processUpdate token manager update = void $ runMaybeT $ do
               case (Prelude.length res) of
                   0 -> sendReply msg $ "Не найдено: " <> args
                   _ -> sendReply msg $ hoogleResults res
+
