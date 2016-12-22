@@ -7,11 +7,12 @@ module Main where
 import Control.Concurrent.STM 
 import Control.Concurrent.STM.TVar (writeTVar, newTVar, readTVar)
 
+import System.IO.Unsafe
 -- для обработки ошибок
 import Control.Error.Util (hoistMaybe, isJustT)
 
-
-import Control.Monad --(void, when)
+import Control.Monad
+import Control.Monad (void, when)
 import Control.Monad.Catch (MonadThrow)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Trans.Class (lift)
@@ -25,7 +26,7 @@ import qualified Data.List as L (find, foldl1')
 import Data.Monoid ((<>))
 
 --стринги это не круто, поэтому Data.Text
-import Data.Text (pack)
+import Data.Text --(pack, unpack)
 import qualified Data.Text as T (take, drop, length)
 
 --низкоуровневый API для хттп
@@ -53,17 +54,22 @@ atomRead = atomically . readTVar
 appVH a x = atomically $ readTVar a >>= writeTVar x 
 
 countMy :: Int
-countMy = 2 --atomically $ newTVar 5	
+countMy = 2 
 
+myMain :: Int -> IO String
 myMain x = do
 	  shared <- atomically $ newTVar countMy
 	  b <- atomically $ newTVar x
           before <- atomRead shared
-          --putStrLn $ "Before: " ++ show before
+          putStrLn $ "Before: " ++ show before
           appVH b shared 
           after <- atomRead shared
-          --putStrLn $ "After: " ++ show after
- 
+          putStrLn $ "After: " ++ show after
+          return $ show x
+
+helpF :: String -> Text
+helpF x = pack $ "Задано число показываемых функций: " ++ show x
+
 main :: IO ()
 main = do
 
@@ -99,10 +105,13 @@ botUpdates token offset limit timeout manager = do
               [] -> return []
               _ -> do
                 let
-                  maxUpdateId = maximum $ map update_id batch
+                  maxUpdateId = Prelude.maximum $ Prelude.map update_id batch
                   newOffset = Just (maxUpdateId + 1)
                 liftIO $ atomically $ writeTVar oldOffset newOffset
                 return batch
+
+-- pack $ "Задано число показываемых функций: " ++
+
 
 -- обработка входящего сообщения и какая-то дичь с войдами
 processUpdate :: (MonadThrow m, MonadIO m) => Token -> Manager -> Update -> m ()
@@ -143,7 +152,7 @@ processUpdate token manager update = void $ runMaybeT $ do
 
         -- список команд, которые принимает бот
         commands = [ ("start", startCmd), ("help", helpCmd), ("hoogle", hoogleCmd), ("settings", setConst) ]
-
+		
         -- старт - магия мемасов
         startCmd msg args = do sendImg msg "https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg"
 
@@ -152,11 +161,14 @@ processUpdate token manager update = void $ runMaybeT $ do
           do sendReply msg $ "Для того, чтобы воспользоваться ботом необходимо ввести " <>
                             "команду hoogle с параметрами (либо названием функции, " <>
                             "для которой требуется получить описание, либо её сигнатуру)"
+
        -- команда, позволяющая установить количество функций, выводимых после команды hoogle
         setConst msg args = do 
+        	--sendReply msg $ helpFrgs
+        	-- (myMain $ read $ unpack args) >>= show
         	case (T.length args) of
-        		0 -> sendReply msg $ "Количество показываемых функций: " <> " "
-        		_ -> sendReply msg $ "Задано число показываемых функций: " <> args
+        		0 -> sendReply msg $ pack $ "Количество показываемых функций: " ++ show countMy
+        		_ -> sendReply msg $  helpF $ unsafePerformIO (myMain $ read $ unpack args)
 
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
@@ -165,11 +177,9 @@ processUpdate token manager update = void $ runMaybeT $ do
           case (T.length args) of
             0 -> sendReply msg $ "Введите запрос ( /hoogle запрос )"
             _ -> do
-              case (length res) of
+              case (Prelude.length res) of
                   0 -> sendReply msg $ "Не найдено: " <> args
                   _ -> sendReply msg $ hoogleResults res
-        --sendReply msg $ "Введите запрос ( /hoogle запрос )" ++ show $ atomically $ readTVar countMy
 
---type CountFunc = TVar Integer
 
 --добавить список, хранящий
