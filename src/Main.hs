@@ -36,7 +36,7 @@ import Web.Telegram.API.Bot
 --модуль для парсинга http://www.haskell.org/hoogle/
 import Hoogle
 
-type countFuncUser = Integer
+--type countFuncUser = Integer
 
 main :: IO ()
 main = do
@@ -126,34 +126,19 @@ processUpdate token manager update = void $ runMaybeT $ do
                             "команду hoogle с параметрами (либо названием функции, " <>
                             "для которой требуется получить описание, либо её сигнатуру)"
 
-<<<<<<< HEAD
         setConst msg args = do
         	case (T.length args) of
         		0 -> sendReply msg $ "Количество показываемых функций: " <> countFuncUser
         		_ -> sendReply msg $ "Задано число показываемых функций: " <> args
-=======
-        setConst msg args =
-          do sendReply msg $ "Мяу :)"
->>>>>>> c62fabc4b51f550ef5371e047d02b5406ee9672c
-
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
           HoogleResponse { results = res } <- hoogle args 5
-<<<<<<< HEAD
-          when (T.length args == 0) $ do sendReply msg $ "Команде требуется параметр" <> args
-          when (T.length args > 0) $ do
-            case (length res) of
-                0 -> sendReply msg $ "Not found: " <> args
-                _ -> sendReply msg $ hoogleResults res
-
---type CountFunc = TVar Integer
-
-=======
           case (T.length args) of
             0 -> sendReply msg $ "Введите запрос ( /hoogle запрос )"
             _ -> do
               case (length res) of
                   0 -> sendReply msg $ "Не найдено: " <> args
                   _ -> sendReply msg $ hoogleResults res
->>>>>>> c62fabc4b51f550ef5371e047d02b5406ee9672c
+--type CountFunc = TVar Integer
+
 
