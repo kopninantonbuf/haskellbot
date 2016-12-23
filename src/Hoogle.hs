@@ -29,7 +29,6 @@ import Data.ByteString.Char8 (ByteString, unpack, pack)
 import Network.HTTP.Simple (Request, parseRequest, httpJSON, getResponseBody)
 import Network.HTTP.Types.URI (renderSimpleQuery)
 
-
 -- Структура описания одной функции.
 data HoogleResult = HoogleResult { self :: Text, docs :: Text, location :: Text }
 $(deriveJSON defaultOptions ''HoogleResult)
@@ -57,4 +56,4 @@ hoogleResults = L.foldl1' (\x y -> x <> "  \n" <> y) . map (("==================
 
 -- Функция, обрабатывающая описание каждой функции.
 hoogleResult :: HoogleResult -> Text
-hoogleResult res = "-- " <> self res <> "  \n\nDescription: \n" <> docs res <> " \n" <> location res <> "\n"
+hoogleResult res = "-- " <> self res <> "  \n\nОписание: \n" <> docs res <> " \n" <> location res <> "\n"

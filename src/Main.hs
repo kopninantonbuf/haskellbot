@@ -8,7 +8,10 @@ import Control.Concurrent.STM.TVar (writeTVar, newTVar, readTVar)
 
 import System.IO.Unsafe (unsafePerformIO)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 29200f7cee684630a1fab7e57b333d85bb8ecac7
 -- для обработки ошибок
 import Control.Error.Util (hoistMaybe, isJustT)
 
@@ -57,6 +60,7 @@ appVH a x = atomically $ readTVar a >>= writeTVar x
 countFuncUser :: TVar Int
 countFuncUser = unsafePerformIO $ newTVarIO 5
 
+<<<<<<< HEAD
 setConst :: Maybe Int -> IO Int
 setConst x = do
 		case x of
@@ -66,6 +70,12 @@ setConst x = do
 			setConstWrite x = atomically $ do
 					writeTVar countFuncUser x
 					return x
+=======
+setConst :: Int -> IO Int
+setConst x = atomically $ do
+  writeTVar countFuncUser x
+  return x
+>>>>>>> 29200f7cee684630a1fab7e57b333d85bb8ecac7
 
 textSettings :: String -> Text
 textSettings x = pack $ "Задано число показываемых функций: " <> show x
@@ -164,7 +174,11 @@ processUpdate token manager update = void $ runMaybeT $ do
           case (T.length args) of
             0 -> sendReply msg $ pack $ "Количество показываемых функций: " <>
                 show (unsafePerformIO $ atomRead countFuncUser)
+<<<<<<< HEAD
             _ -> sendReply msg $ textSettings $ show $ unsafePerformIO (setConst $ readMaybe $ unpack args)
+=======
+            _ -> sendReply msg $ textSettings $ show $ unsafePerformIO (setConst $ read $ unpack args)
+>>>>>>> 29200f7cee684630a1fab7e57b333d85bb8ecac7
 
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
