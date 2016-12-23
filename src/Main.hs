@@ -3,10 +3,12 @@
 module Main where
 
 -- программная транзакционная память, воу!
-import Control.Concurrent.STM 
+import Control.Concurrent.STM
 import Control.Concurrent.STM.TVar (writeTVar, newTVar, readTVar)
 
 import System.IO.Unsafe (unsafePerformIO)
+
+
 -- для обработки ошибок
 import Control.Error.Util (hoistMaybe, isJustT)
 
@@ -24,8 +26,11 @@ import qualified Data.List as L (find, foldl1')
 import Data.Monoid ((<>))
 
 --стринги это не круто, поэтому Data.Text
-import Data.Text --(pack, unpack)
+import Data.Text (Text, pack, unpack)
 import qualified Data.Text as T (take, drop, length)
+
+--для обработки входных параметров
+import Text.Read (readMaybe)
 
 --низкоуровневый API для хттп
 import Network.HTTP.Client (newManager, Manager)
@@ -47,36 +52,39 @@ import Hoogle
 
 --atomRead :: TVar Integer -> IO Integer
 atomRead = atomically . readTVar
-appVH a x = atomically $ readTVar a >>= writeTVar x 
+appVH a x = atomically $ readTVar a >>= writeTVar x
 
 countFuncUser :: TVar Int
-countFuncUser = unsafePerformIO $ newTVarIO 0
+countFuncUser = unsafePerformIO $ newTVarIO 5
 
-setConst :: Int -> IO Int
-setConst x = atomically $ do
-	          writeTVar countFuncUser x
-          	  return x
+setConst :: Maybe Int -> IO Int
+setConst x = do
+		case x of
+			Just x -> setConstWrite x
+			Nothing -> atomRead countFuncUser
+		where
+			setConstWrite x = atomically $ do
+					writeTVar countFuncUser x
+					return x
 
 textSettings :: String -> Text
-textSettings x = pack $ "Задано число показываемых функций: " ++ show x
+textSettings x = pack $ "Задано число показываемых функций: " <> show x
 
 main :: IO ()
 main = do
-
   -- менеджер хттп-соединения с сервером телеграма по безопасному протоколу(tls)
   manager <- newManager tlsManagerSettings
   -- токен бота
-  let token = Token "bot319624564:AAE_fb6q_eTI942c4K7wpC4kNReC28939RI"
+  let token = Token "666"
   -- основная функция
   -- нафинги нужны для getUpdates
   -- оператор $$ передает данные из botUpdates в processUpdate, вообще офигеть
-  botUpdates token Nothing Nothing Nothing manager $$ DC.mapM_ (processUpdate token manager)
+  botUpdates token Nothing Nothing (Just 1) manager $$ DC.mapM_ (processUpdate token manager)
 
 -- приём входящих сообщений
 -- offset - идентификатор входящих сообщений (с каждым сообщением увеличивается на 1)
 -- limit - макс. кол-во сообщений принятых за раз (= 100 по дефолту)
--- timeout - задержка в секундах для работы getUpdates (= 0 по дефолту)
--- пишут, что надо поставить таймаут больше 0, не знаю зачем, вроде и так работает
+-- timeout - задержка в секундах для long polling (= 0 по дефолту)
 -- https://core.telegram.org/bots/API - тут вся инфа, в общем
 botUpdates :: (MonadIO m) => Token -> Maybe Int -> Maybe Int -> Maybe Int -> Manager -> Source m Update
 botUpdates token offset limit timeout manager = do
@@ -99,9 +107,6 @@ botUpdates token offset limit timeout manager = do
                   newOffset = Just (maxUpdateId + 1)
                 liftIO $ atomically $ writeTVar oldOffset newOffset
                 return batch
-
--- pack $ "Задано число показываемых функций: " ++
-
 
 -- обработка входящего сообщения и какая-то дичь с войдами
 processUpdate :: (MonadThrow m, MonadIO m) => Token -> Manager -> Update -> m ()
@@ -142,9 +147,11 @@ processUpdate token manager update = void $ runMaybeT $ do
 
         -- список команд, которые принимает бот
         commands = [ ("start", startCmd), ("help", helpCmd), ("hoogle", hoogleCmd), ("settings", settingsCmd) ]
-		
+
         -- старт - магия мемасов
-        startCmd msg args = do sendImg msg "https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg"
+        startCmd msg args = do
+          sendImg msg "https://ipic.su/img/img7/fs/vzhuh.1482187468.jpg"
+          sendReply msg $ "Добро пожаловать!"
 
         -- хелп - справка
         helpCmd msg args =
@@ -153,10 +160,11 @@ processUpdate token manager update = void $ runMaybeT $ do
                             "для которой требуется получить описание, либо её сигнатуру)"
 
        -- команда, позволяющая установить количество функций, выводимых после команды hoogle
-        settingsCmd msg args = do 
-        	case (T.length args) of
-        		0 -> sendReply msg $ pack $ "Количество показываемых функций: " ++ show (unsafePerformIO $ atomRead countFuncUser)
-        		_ -> sendReply msg $ textSettings $ show $ unsafePerformIO (setConst $ read $ unpack args)
+        settingsCmd msg args = do
+          case (T.length args) of
+            0 -> sendReply msg $ pack $ "Количество показываемых функций: " <>
+                show (unsafePerformIO $ atomRead countFuncUser)
+            _ -> sendReply msg $ textSettings $ show $ unsafePerformIO (setConst $ readMaybe $ unpack args)
 
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
