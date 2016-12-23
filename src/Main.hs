@@ -8,10 +8,6 @@ import Control.Concurrent.STM.TVar (writeTVar, newTVar, readTVar)
 
 import System.IO.Unsafe (unsafePerformIO)
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 29200f7cee684630a1fab7e57b333d85bb8ecac7
 -- для обработки ошибок
 import Control.Error.Util (hoistMaybe, isJustT)
 
@@ -45,37 +41,21 @@ import Web.Telegram.API.Bot
 --модуль для парсинга http://www.haskell.org/hoogle/
 import Hoogle
 
-
---Список пар, хранящий количество показываемых функций для каждого пользователя
---type ListUserCount = [(T.Text, Integer)]
-
---Получение настроек по idChat
---getCount :: ListUserCount -> T.Text -> Integer
---getCount arrData idChat = snd $ head $ filter (\x -> x == (idChat, _)) arrData
-
---atomRead :: TVar Integer -> IO Integer
 atomRead = atomically . readTVar
 appVH a x = atomically $ readTVar a >>= writeTVar x
 
 countFuncUser :: TVar Int
 countFuncUser = unsafePerformIO $ newTVarIO 5
 
-<<<<<<< HEAD
 setConst :: Maybe Int -> IO Int
 setConst x = do
-		case x of
-			Just x -> setConstWrite x
-			Nothing -> atomRead countFuncUser
-		where
-			setConstWrite x = atomically $ do
-					writeTVar countFuncUser x
-					return x
-=======
-setConst :: Int -> IO Int
-setConst x = atomically $ do
-  writeTVar countFuncUser x
-  return x
->>>>>>> 29200f7cee684630a1fab7e57b333d85bb8ecac7
+  case x of
+    Just x -> setConstWrite x
+    Nothing -> atomRead countFuncUser
+  where
+    setConstWrite x = atomically $ do
+      writeTVar countFuncUser x
+      return x
 
 textSettings :: String -> Text
 textSettings x = pack $ "Задано число показываемых функций: " <> show x
@@ -85,7 +65,7 @@ main = do
   -- менеджер хттп-соединения с сервером телеграма по безопасному протоколу(tls)
   manager <- newManager tlsManagerSettings
   -- токен бота
-  let token = Token "666"
+  let token = Token "bot319624564:AAE_fb6q_eTI942c4K7wpC4kNReC28939RI"
   -- основная функция
   -- нафинги нужны для getUpdates
   -- оператор $$ передает данные из botUpdates в processUpdate, вообще офигеть
@@ -128,7 +108,7 @@ processUpdate token manager update = void $ runMaybeT $ do
     -- то в консоль выводятся все приходящие сообщения
     -- txt - только само сообщение (что пользователь написал в чат), без другой инфы
     txt <- hoistMaybe $ text msg
-    --liftIO $ print txt
+    liftIO $ print txt
     processed <- lift $ tryProcessCommand msg txt
     -- если команда не распознана, то посылаем это сообщение:
     when (not processed) $ do sendReply msg "Команда не найдена"
@@ -174,11 +154,7 @@ processUpdate token manager update = void $ runMaybeT $ do
           case (T.length args) of
             0 -> sendReply msg $ pack $ "Количество показываемых функций: " <>
                 show (unsafePerformIO $ atomRead countFuncUser)
-<<<<<<< HEAD
             _ -> sendReply msg $ textSettings $ show $ unsafePerformIO (setConst $ readMaybe $ unpack args)
-=======
-            _ -> sendReply msg $ textSettings $ show $ unsafePerformIO (setConst $ read $ unpack args)
->>>>>>> 29200f7cee684630a1fab7e57b333d85bb8ecac7
 
         -- команда, которая парсит хугл и возвращает справку по функциям
         hoogleCmd msg args = do
@@ -189,3 +165,4 @@ processUpdate token manager update = void $ runMaybeT $ do
               case (Prelude.length res) of
                   0 -> sendReply msg $ "Не найдено: " <> args
                   _ -> sendReply msg $ hoogleResults res
+

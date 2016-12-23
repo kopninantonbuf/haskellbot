@@ -26,7 +26,7 @@ import Data.Text.Encoding (encodeUtf8)
 import Data.ByteString.Char8 (ByteString, unpack, pack)
 
 -- API для работы с протоколом HTTP.
-import Network.HTTP.Simple (Request, parseRequest, httpJSON, getResponseBody)
+import Network.HTTP.Simple (Request, parseRequest, httpJSONEither, getResponseBody)
 import Network.HTTP.Types.URI (renderSimpleQuery)
 
 -- Структура описания одной функции.
@@ -42,7 +42,10 @@ $(deriveJSON defaultOptions ''HoogleResponse)
 hoogle :: (MonadThrow m, MonadIO m) => Text -> Int -> m HoogleResponse
 hoogle query count = do
   req <- makeRequest (encodeUtf8 query) count
-  getResponseBody <$> httpJSON req
+  resp <- httpJSONEither req 
+  case getResponseBody resp of
+    Left e -> return $ HoogleResponse []
+    Right res -> return res
 
 -- Функция, которая формирует запрос на Hoogle.org.
 makeRequest :: (MonadThrow m) => ByteString -> Int -> m Request
@@ -52,7 +55,7 @@ makeRequest queryText count = do
 
 -- Функция, проходящая по списку ответов с Hoogle.org и обрабатывающая описание каждой функции с помощью функции formatHoogleResult.
 hoogleResults :: [HoogleResult] -> Text
-hoogleResults = L.foldl1' (\x y -> x <> "  \n" <> y) . map (("=====================================\n" <>) . hoogleResult)
+hoogleResults = L.foldl1' (\x y -> x <> "  \n" <> y) . map (("===============\n" <>) . hoogleResult)
 
 -- Функция, обрабатывающая описание каждой функции.
 hoogleResult :: HoogleResult -> Text
