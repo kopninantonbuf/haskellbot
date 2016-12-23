@@ -42,7 +42,7 @@ $(deriveJSON defaultOptions ''HoogleResponse)
 hoogle :: (MonadThrow m, MonadIO m) => Text -> Int -> m HoogleResponse
 hoogle query count = do
   req <- makeRequest (encodeUtf8 query) count
-  resp <- httpJSONEither req 
+  resp <- httpJSONEither req
   case getResponseBody resp of
     Left e -> return $ HoogleResponse []
     Right res -> return res

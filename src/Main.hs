@@ -65,7 +65,7 @@ main = do
   -- менеджер хттп-соединения с сервером телеграма по безопасному протоколу(tls)
   manager <- newManager tlsManagerSettings
   -- токен бота
-  let token = Token "bot319624564:AAE_fb6q_eTI942c4K7wpC4kNReC28939RI"
+  let token = Token "bot666"
   -- основная функция
   -- нафинги нужны для getUpdates
   -- оператор $$ передает данные из botUpdates в processUpdate, вообще офигеть
@@ -165,4 +165,3 @@ processUpdate token manager update = void $ runMaybeT $ do
               case (Prelude.length res) of
                   0 -> sendReply msg $ "Не найдено: " <> args
                   _ -> sendReply msg $ hoogleResults res
-
