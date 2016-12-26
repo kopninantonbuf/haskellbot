@@ -5,7 +5,7 @@ module Main where
 -- программная транзакционная память, воу!
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TVar (writeTVar, newTVar, readTVar)
-
+import Control.Concurrent (threadDelay)
 import System.IO.Unsafe (unsafePerformIO)
 
 -- для обработки ошибок
@@ -87,7 +87,10 @@ botUpdates token offset limit timeout manager = do
         -- ответ сервера телеграма (список новых сообщений)
         resp <- liftIO $ getUpdates token currentOffset limit timeout manager
         case resp of
-          Left e -> error $ show e
+          Left e -> do 
+            liftIO $ print "Connection Error, pause: 10 min"
+            liftIO $ threadDelay 600000000 -- пауза в микросекундах (1 сек = 1 000 000 мкс)
+            return []
           Right (Response { result = batch }) -> do
             case batch of
               [] -> return []
